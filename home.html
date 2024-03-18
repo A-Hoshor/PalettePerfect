@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+  <title>Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+
+</head>
+<body>
+    <header>
+  
+    </header>
+
+    <div id="page-wrapper">
+
+      <h1>Image File Reader</h1>
+      <div>
+        Select an image file: 
+        <input type="file" id="fileInput">
+      </div>
+
+      <div>
+        <label for="quantity">Quantity (between 2 and 8):</label>
+        <input type="number" id="number" name="quantity" min="2" max="8">
+      </div>
+      <div id="fileDisplayArea"></div>
+      <script src="imageGetter.js"></script> 
+    </div>
+
+    <form action = "/cgi-bin/test.py" method = "get">
+      Number of Colors: <input type = "number" name = "colors"> <br />
+      <input type = "submit" value = "Submit" />
+      </form>
+
+<footer class="footer">
+    <div class="container p-4">
+    </div>
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">
+      Designed By: Alyssa Hoshor © 2022
+    </div>
+  </footer>
+
+  
+</body>
+
+</html>
