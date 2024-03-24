@@ -6,10 +6,15 @@ from PIL import Image
 from sklearn.metrics import pairwise_distances_argmin
 from sklearn.utils import resample
 import math
+from myapp.forms import ImageForm
+from myapp.models import Image
 
-n_colors = 4
+color_obj = Image.objects.filter(id="numberOfColors")[0]
+n_colors=color_obj.numberOfColors
 
-image_path=("img/drone.JPG")
+imagepath_obj= Image.objects.filter(id="image")[0]
+image_path=imagepath_obj.image
+
 image=Image.open(image_path)
 wimage = math.floor(image.width/2)
 himage = math.floor(image.height/2)

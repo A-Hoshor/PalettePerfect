@@ -1,0 +1,33 @@
+{%extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %} Home Page {% endblock %}
+{% block content %}
+<div class = "ImageForm">
+
+    <a class="text-blue-600 tracking-normal mb-4" href="{% url 'list_images' %}">View all images</a>
+
+    <form method ="POST" enctype="multipart/form-data">
+        {% csrf_token %} 
+        <div>
+            {{ form.name|add_label_class:"block mb-2 text-sm font-medium text-gray-900 dark:text-white"}}
+            {% render_field form.name class="bg-gray-50 border border0gray-300 text-gray-900 text-sm" %}
+        </div>
+
+        <div>
+            {{ form.numberOfColors|add_label_class:"block mb-2 text-sm font-medium text-gray-900 dark:text-white"}}
+            {% render_field form.numberOfColors class="bg-gray-50 border border0gray-300 text-gray-900 text-sm" %}
+        </div>
+
+
+        <div>
+            {{ form.image|add_label_class:"block mb-2 text- sm font-medium text-gray-900 dark:text-white"}}
+            {% render_field form.image class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-popinter bg-gray-50 dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="file_input_help" %}
+        </div>
+
+            <input type = "submit"
+                value="Submit">
+            </input>
+
+    </form>
+</div>
+{% endblock %}
