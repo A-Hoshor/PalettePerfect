@@ -1,23 +1,32 @@
-{%extends "base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="max-w-sm rounded overflow-hidden shadow-lg">
     <a class="text-blue-600 tracking-normal mb-4" href="{% url 'home' %}">Add an image!</a>
     {% for image in images %}
-    <img class="w-full" src="{{ image.image.url }}" alt="{{ image.name }}"></img>
-    <div class="px-6 py-4">
-      <div class="font-bold text-xl mb-2">{{ image.name }}</div>
-      <p>
-        Size(bytes): {{ image.image.size}}
-        Width: {{ image.image.width}}
-        Height: {{ image.image.height}}
-      </p>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-        <a href="{% url 'delete_image' image.pk %}">
-        Delete
-        </a>
-      </button>
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <img class="w-full" src="{{ image.image.url }}" alt="{{ image.name }}"></img>
+            <div class="px-6 py-4">
+                <div class="font-bold text-xl mb-2">{{ image.name }}</div>
+                <p>
+                    Size(bytes): {{ image.size}}<br>
+                    Width: {{ image.width}}<br>
+                    Height: {{ image.height}}<br>
+                    Colors: {{ image.numberOfColors}}
+                </p>
+            </div>
+        </div>
+        {% if image.processed_image %}
+        <div>
+            <img class="w-full" src="{{ image.processed_image.url }}" alt="{{ image.name }} Processed"></img>
+            <div class="px-6 py-4">
+                <div class="font-bold text-xl mb-2">{{ image.name }} Processed</div>
+                <!-- You can display additional information about the processed image if needed -->
+            </div>
+        </div>
+        {% endif %}
     </div>
     {% endfor %}
-  </div>
-  {% endblock %}
+</div>
+{% endblock %}
