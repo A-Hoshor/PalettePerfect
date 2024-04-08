@@ -1,4 +1,3 @@
-import asyncio
 import math
 import numpy as np
 from sklearn.cluster import KMeans
@@ -7,6 +6,8 @@ from django.core.files.base import ContentFile
 from io import BytesIO
 import io
 import os
+
+from myproject.settings import BASE_DIR
 
 
 async def process_image_async(image_path, n_colors):
@@ -33,8 +34,6 @@ async def process_image_async(image_path, n_colors):
     # Get labels
     labels = kmeans.predict(imagearr)
 
-    # Print labels for debugging
-    print("Labels:", labels)
 
     # Print centroids for debugging
     print("Centroids of quantized colors:", kmeans.cluster_centers_)
@@ -51,6 +50,9 @@ async def process_image_async(image_path, n_colors):
 
     processed_image = PilImage.fromarray((quantized_image * 255).astype(np.uint8))
 
+
+    #Save image
+    """
     original_filename = os.path.basename(image_path)
     processed_image_name = f"{os.path.splitext(original_filename)[0]}_processed.jpg"
 
@@ -58,6 +60,73 @@ async def process_image_async(image_path, n_colors):
     processed_image.save(processed_image_io, format='JPEG')
     processed_image_io.seek(0)
 
-    processed_image_file = ContentFile(processed_image_io.read(), name=processed_image_name)
+    processed_image_path = os.path.join(BASE_DIR, 'media', 'processed_images', processed_image_name)
+    """
+    processed_image_content = BytesIO()
+    processed_image.save(processed_image_content, format='JPEG')
+    processed_image_content.seek(0)
+    #Get colors that image simplified to
+    original_colors = np.unique(kmeans.cluster_centers_, axis=0)
 
-    return processed_image_file
+    #Make colors able to displayed on HTML page
+    color_html_content = ""
+    for color in original_colors:
+        color_hex = '#{0:02x}{1:02x}{2:02x}'.format(int(color[0] * 255), int(color[1] * 255), int(color[2] * 255))
+        color_html_content += f"<div style='width: 100px; height: 100px; background-color: {color_hex};'></div>"
+
+    # Append color HTML content to existing HTML file
+    with open('list.html', 'a') as html_file:
+        html_file.write(color_html_content)
+
+    print("process_image_async complete")
+    return processed_image_content, color_html_content
+
+
+async def generate_palette(image_path):
+    print("inside generate palette function")
+
+    # Convert image data to numpy array
+    img = PilImage.open(image_path)
+    print("img size", img.size)
+
+    imagearr = np.array(img)
+    imagearr = imagearr.astype('float64')
+    imagearr = imagearr / 255
+
+    w, h, d = imagearr.shape
+    assert d == 3  # Ensure the image has 3 channels (RGB)
+
+    # Reshape array
+    a = w * h
+    imagearr = np.reshape(imagearr, (a, d))
+        
+    # Call the palette function
+    palette_img = await palette(imagearr)
+        
+        # Convert the palette image to base64 or save it to disk as needed
+        # For example:
+        # palette_path = 'path/to/palette.png'
+        # cv2.imwrite(palette_path, palette_img)
+        
+        # Return the palette image path or data in the response
+    return palette_img  # Or any other response data
+    
+
+async def palette(cluster_centers):
+    # Convert cluster centers to integers
+    cluster_centers = cluster_centers.astype(int)
+
+    # Create a blank palette image with dimensions based on the number of clusters
+    num_colors = len(cluster_centers)
+    palette_width = 100  # Width of each color block in the palette
+    palette_height = 100  # Height of the palette image
+    palette_img = np.zeros((palette_height, palette_width * num_colors, 3), dtype=np.uint8)
+
+    # Fill the palette image with representative colors
+    for i, color in enumerate(cluster_centers):
+        start_col = i * palette_width
+        end_col = (i + 1) * palette_width
+        palette_img[:, start_col:end_col] = color
+
+    return palette_img
+ 

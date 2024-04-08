@@ -10,6 +10,7 @@
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2">{{ image.name }}</div>
                 <p>
+                    PK: {{ image.pk }} <br>
                     Size(bytes): {{ image.size}}<br>
                     Width: {{ image.width}}<br>
                     Height: {{ image.height}}<br>
@@ -19,10 +20,12 @@
         </div>
         {% if image.processed_image %}
         <div>
-            <img class="w-full" src="{{ image.processed_image.url }}" alt="{{ image.name }} Processed"></img>
+            <a href="{% url 'color_info' pk=image.pk %}">
+                <img class="w-full" src="{{ image.processed_image.url }}" alt="Image"></img>
+            </a>
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2">{{ image.name }} Processed</div>
-                <!-- You can display additional information about the processed image if needed -->
+                
             </div>
         </div>
         {% endif %}

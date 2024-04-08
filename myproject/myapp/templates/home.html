@@ -22,7 +22,7 @@
             {{ form.image|add_label_class:"block mb-2 text-sm font-medium text-gray-900 dark:text-white"}}
             {% render_field form.image class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-popinter bg-gray-50 dark:text-gray-400 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="file_input_help" %}
         </div>
-
+        
         <div>
             {% for field, errors in form.errors.items %}
                 {% for error in errors %}

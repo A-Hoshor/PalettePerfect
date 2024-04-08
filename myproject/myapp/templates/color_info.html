@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %} Color Information {% endblock %}
+{% block content %}
+
+<h1>Color Information</h1>
+
+<div>
+<img src="{{ MEDIA_URL }}{{ image.processed_image.url }}" alt="Processed Image">
+</div>
+
+<div>
+    <h2>Palette Image</h2>
+    <img src="data:image/png;base64,{{ palette_image }}" alt="Palette Image">
+</div>
+
+{% endblock %}
