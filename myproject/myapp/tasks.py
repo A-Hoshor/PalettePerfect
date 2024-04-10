@@ -10,7 +10,7 @@ import os
 from myproject.settings import BASE_DIR
 
 
-async def process_image_async(image_path, n_colors):
+async def process_image_async(image_path, n_colors, image_instance):
     image = PilImage.open(image_path)
     wimage = math.floor(image.width/2)
     himage = math.floor(image.height/2)
@@ -35,9 +35,12 @@ async def process_image_async(image_path, n_colors):
     labels = kmeans.predict(imagearr)
 
 
-    # Print centroids for debugging
-    print("Centroids of quantized colors:", kmeans.cluster_centers_)
+    #Store centroids
+    centroids = kmeans.cluster_centers_
+    print(centroids)
 
+    #Send centroids to Centroids function in order to save to database
+    save_centroids_to_model(image_instance, centroids)
 
     # Recreate image with quantized colors
     def recreate(centroids, labels, w, h):
@@ -80,6 +83,19 @@ async def process_image_async(image_path, n_colors):
 
     print("process_image_async complete")
     return processed_image_content, color_html_content
+
+def save_centroids_to_model(image_instance, centroids):
+    print("begin save centroids to model function")
+    n_colors = centroids.shape[0]
+    for i in range(n_colors):
+        setattr(image_instance, f'color{i+1}', rgb_to_hex(centroids[i]))
+    print(centroids)
+    print(image_instance)
+    
+
+def rgb_to_hex(rgb):
+    # Convert RGB values to hexadecimal color code
+    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
 
 
 async def generate_palette(image_path):

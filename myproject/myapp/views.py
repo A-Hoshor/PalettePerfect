@@ -11,6 +11,7 @@ import os
 import logging
 from django.shortcuts import redirect
 from django.conf import settings
+from django.core.files.storage import default_storage
 from concurrent.futures import ThreadPoolExecutor
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -24,7 +25,6 @@ async def async_process_image(image_instance, number_of_colors, original_name, p
     processed_image_name = f"{os.path.splitext(original_name)[0]}_processed.jpg"
     image_instance.processed_image.save(processed_image_name, processed_image_content, save=False)
     await sync_to_async(image_instance.save)()
-
 
 async def home(request):
     if request.method =="POST":
@@ -55,7 +55,7 @@ async def home(request):
 
                 # Process the image asynchronously
                 print("processing image....")
-                processed_image_content, color_html_content = await process_image_async(image_instance.image.path, numberOfColors)
+                processed_image_content, color_html_content = await process_image_async(image_instance.image.path, numberOfColors, image_instance)
                 print("processing image done")
                 processed_image_name = f"{os.path.splitext(original_name)[0]}_processed.jpg"
                 print("processed image name: ", processed_image_name)
@@ -66,7 +66,7 @@ async def home(request):
 
                 print("Processed image instance", processed_image_instance)
                 print("Processed image content: ", processed_image_content)
-                print("Color HTML content: ", color_html_content)
+                #print("Color HTML content: ", color_html_content)
 
                 # Pass processed image file and color HTML content to template
                 context = {
@@ -74,7 +74,7 @@ async def home(request):
                     'processed_image': processed_image_content,
                     'color_html_content': color_html_content
                 }
-                print("Context: ", context)
+                #print("Context: ", context)
             
                 return await list_images(request)
             except Exception as e:
@@ -100,9 +100,13 @@ async def list_images(request):
         'images': images,
     }
 
-    print("Context in list_images:", context)  # Check the context before rendering the template
+    #print("Context in list_images:", context)  # Check the context before rendering the template
 
     return render(request, 'list.html', context)
+
+def color_list(request):
+    colors = Image.colors.all()
+    return render(request, 'your_template.html', {'colors': colors})
 
 async def delete_image(request, pk):
     image = await sync_to_async(get_object_or_404)(Image, pk=pk)

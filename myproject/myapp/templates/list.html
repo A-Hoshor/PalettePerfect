@@ -15,6 +15,15 @@
                     Width: {{ image.width}}<br>
                     Height: {{ image.height}}<br>
                     Colors: {{ image.numberOfColors}}
+                    Colors:
+                    <span {% if image.color1 %}style="background-color: {{ image.color1 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color2 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color3 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color4 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color5 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color6 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color7 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color1 %}style="background-color: {{ image.color8 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
                 </p>
             </div>
         </div>
@@ -29,6 +38,10 @@
             </div>
         </div>
         {% endif %}
+
+        <ul>
+           
+        </ul>
     </div>
     {% endfor %}
 </div>
