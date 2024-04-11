@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import random
 from django.shortcuts import render, get_object_or_404, redirect
 from myapp.forms import ImageForm
 from myapp.models import Image
@@ -113,26 +114,63 @@ async def delete_image(request, pk):
     await sync_to_async(image.delete)()
     return redirect('list_images')
 
-async def color_info(request, pk):
-
-    print("inside color_info view function")
+def color_info(request, pk):
     # Handle GET request to render the template
-    image = await sync_to_async(get_object_or_404)(Image, pk=pk)
-    image_data = image.processed_image.read()
-    image_path = os.path.join(settings.MEDIA_ROOT, str(image.processed_image))
-    palette_image = await generate_palette(image_path)
-    print("palette image received")
-
-    # Print palette image data for debugging
-    print("Palette image shape:", palette_image.shape)
-    print("Palette image values:", palette_image)
-
-
+    image = Image.objects.get(pk=pk)
+    
+    # Pass the processed image to the template
     context = {
-        'image': image,
-        'palette_image': palette_image,
+        'pk': pk,
+        'processed_image': image.processed_image.url,  
+        'colors': [image.color1, image.color2, image.color3, image.color4, image.color5, image.color6, image.color7, image.color8]
     }
 
+    print(context)
     
     return render(request, 'color_info.html', context)
 
+
+def generate_random_color():
+    """Generate a random color represented as RGB tuple."""
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    return (r, g, b)
+
+def generate_random_colors(num_colors):
+    """Generate a list of random colors."""
+    return [generate_random_color() for _ in range(num_colors)]
+
+# Generate 4 to 6 random colors
+num_colors = random.randint(4, 6)
+random_colors = generate_random_colors(num_colors)
+
+print("Random colors:", random_colors)
+
+def randomize_image(request, pk):
+    print("Inside randomize_image view function")
+    print("Primary key(pk): ", pk)
+
+    if request.method == 'POST':
+        num_colors = 8
+        random_colors = generate_random_colors(num_colors)
+        print(random_colors)
+
+        # Fetch the processed image URL based on the primary key (pk)
+        try:
+            image = Image.objects.get(pk=pk)
+            processed_image_url = image.processed_image.url
+            print("Processed image URL:", processed_image_url)
+        except Image.DoesNotExist:
+            processed_image_url = None
+
+        # Include the pk parameter in the context
+        context = {
+            'random_colors': random_colors,
+            'processed_image_url': processed_image_url,
+            'pk': pk,  # Add pk to the context
+        }
+        return render(request, 'random.html', context)
+    else:
+        # Your existing code to render the initial template
+        return render(request, 'color_info.html')

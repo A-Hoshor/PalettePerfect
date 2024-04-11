@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %} Color Information {% endblock %}
+{% block content %}
+
+<h1>Random Image</h1>
+
+    {% if processed_image_url %}
+    <div>
+        <img src="{{ processed_image_url }}" alt="Processed Image">
+    </div>
+    {% endif %}
+
+<div id="color-container" class="flex flex-wrap">
+    {% for color in random_colors %}
+        <div class="w-24 h-24 mr-4 mb-4 rounded-lg shadow-md" style="background-color: rgb({{ color.0 }}, {{ color.1 }}, {{ color.2 }});"></div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

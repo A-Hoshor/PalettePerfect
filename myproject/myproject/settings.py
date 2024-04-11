@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "myapp",
     "widget_tweaks",
     "channels",
+    "colorfield"
 ]
 
 MIDDLEWARE = [

@@ -6,12 +6,23 @@
 <h1>Color Information</h1>
 
 <div>
-<img src="{{ MEDIA_URL }}{{ image.processed_image.url }}" alt="Processed Image">
+<img src="{{ MEDIA_URL }}{{ processed_image }}" alt="Processed Image">
+</div>
+<div class="mt-8">
+    <h2 class="text-xl font-bold">Colors</h2>
+    <ul class="grid grid-cols-{{ colors|length }} gap-4 mt-2">
+        {% for color in colors %}
+            {% if color %}
+                <li style="background-color: {{ color }};" class="w-16 h-16 rounded-lg shadow-md"></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
 </div>
 
-<div>
-    <h2>Palette Image</h2>
-    <img src="data:image/png;base64,{{ palette_image }}" alt="Palette Image">
-</div>
+<form method="post" action="{% url 'random_page' pk=pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="pk" value="{{ pk }}">
+    <button type="submit" class="btn btn-primary" name="randomize_button">Randomize</button>
+</form>
 
 {% endblock %}

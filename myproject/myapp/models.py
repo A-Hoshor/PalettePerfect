@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from colorfield.fields import ColorField
 
 
 # Create your models here.
@@ -32,3 +33,5 @@ class Image(models.Model):
     #Read color values
     def __str__(self):
         return self.name
+    
+
