@@ -7,6 +7,7 @@ from myapp.models import Image
 from myproject.settings import BASE_DIR
 from .tasks import process_image_async, generate_palette
 from asgiref.sync import sync_to_async
+from PIL import Image as PILImage
 from django.core.files.base import ContentFile
 import os
 import logging
@@ -15,8 +16,10 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from concurrent.futures import ThreadPoolExecutor
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound
 from django.http import Http404
+import numpy as np
+import matplotlib.colors as mcolors
 
 # Create your views here.
 async def async_process_image(image_instance, number_of_colors, original_name, processed_image_content):
@@ -152,6 +155,7 @@ def randomize_image(request, pk):
     print("Primary key(pk): ", pk)
 
     if request.method == 'POST':
+        print("Request method:", request.method)
         num_colors = 8
         random_colors = generate_random_colors(num_colors)
         print(random_colors)
@@ -162,12 +166,81 @@ def randomize_image(request, pk):
             processed_image_url = image.processed_image.url
             print("Processed image URL:", processed_image_url)
         except Image.DoesNotExist:
-            processed_image_url = None
+            return HttpResponseNotFound('Image not found')
 
-        # Include the pk parameter in the context
+        # Open the processed image using PIL
+        processed_image_path = os.path.join(BASE_DIR, processed_image_url.lstrip('/'))
+        processed_image = PILImage.open(processed_image_path)
+
+        # Check if the file exists
+        if os.path.exists(processed_image_path):
+            print("Processed image path:", processed_image_path)
+        else:
+            return HttpResponseNotFound('Processed image not found')
+        
+        # Convert the image to RGB mode if it's not already
+        processed_image = processed_image.convert("RGB")
+
+
+        # Convert the image to a numpy array for easier manipulation
+        processed_image_array = np.array(processed_image)
+
+        # Fetch the image object based on the primary key (pk)
+        try:
+            image = Image.objects.get(pk=pk)
+        except Image.DoesNotExist:
+            return HttpResponseNotFound('Image not found')
+
+        # Create a list of original colors from the image object
+        original_colors = []
+        for i in range(1, image.numberOfColors + 1):
+            hex_color = getattr(image, f"color{i}")
+            rgb_color = mcolors.hex2color(hex_color)
+            # Convert RGB values from [0, 1] to [0, 255] range
+            rgb_color_255 = tuple(int(x * 255) for x in rgb_color)
+            original_colors.append(rgb_color_255)
+
+        print("Original colors in RGB format:", original_colors)
+
+        # Filter out any None values in the original colors list
+        original_colors = [color for color in original_colors if color is not None]
+
+        # Choose one of the original colors randomly as the color to replace
+        if original_colors:
+            original_color_to_replace = random.choice(original_colors)
+        else:
+            # Handle the case where there are no original colors defined
+            return HttpResponseNotFound('No original colors found for this image')
+        print(original_color_to_replace)
+
+        tolerance = 30  
+
+        # Replace colors in the image with random colors
+        for i in range(len(processed_image_array)):
+            for j in range(len(processed_image_array[i])):
+                pixel_color = tuple(processed_image_array[i, j])
+                # Check if the pixel color is similar to any original color within the tolerance threshold
+                for original_color in original_colors:
+                        if all(abs(pixel_color[k] - original_color[k]) <= tolerance for k in range(3)):
+                            # Find the index of the original color in the original_colors list
+                            original_color_index = original_colors.index(original_color)
+                            # Replace the pixel color with the corresponding random color
+                            processed_image_array[i, j] = random_colors[original_color_index]
+                            break  # Break out of the loop once a match is found
+
+        # Convert the modified numpy array back to an image
+        modified_image = PILImage.fromarray(processed_image_array)
+        modified_image.show()
+        """
+        # Save the modified image temporarily (you can save it permanently if needed)
+        modified_image_path = os.path.join(BASE_DIR, 'media', 'random_image', image)
+        modified_image.save(modified_image_path)
+        """
+        # Include the pk parameter, random colors, processed image URL, and modified image path in the context
         context = {
             'random_colors': random_colors,
             'processed_image_url': processed_image_url,
+            #'modified_image_path': modified_image_path,
             'pk': pk,  # Add pk to the context
         }
         return render(request, 'random.html', context)
