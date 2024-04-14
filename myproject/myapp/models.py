@@ -35,3 +35,5 @@ class Image(models.Model):
         return self.name
     
 
+class BookCovers(models.Model):
+    bookImage = models.ImageField(upload_to='kaggle_images/')

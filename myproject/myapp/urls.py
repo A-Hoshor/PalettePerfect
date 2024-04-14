@@ -11,6 +11,7 @@ urlpatterns = [
     path("delete/<int:pk>/", views.delete_image, name='delete_image'),
     path('color_info/<int:pk>/', views.color_info, name="color_info"),
     path('random/<int:pk>/', views.randomize_image, name='random_page'),
+    path('book/<int:pk>/', views.book_image, name='book'),
 ]
 
 urlpatterns += websocket_urlpatterns

@@ -3,11 +3,12 @@ import base64
 import random
 from django.shortcuts import render, get_object_or_404, redirect
 from myapp.forms import ImageForm
-from myapp.models import Image
+from myapp.models import Image, BookCovers
 from myproject.settings import BASE_DIR
 from .tasks import process_image_async, generate_palette
 from asgiref.sync import sync_to_async
 from PIL import Image as PILImage
+from django.core.files import File
 from django.core.files.base import ContentFile
 import os
 import logging
@@ -20,6 +21,9 @@ from django.http import HttpResponseNotFound
 from django.http import Http404
 import numpy as np
 import matplotlib.colors as mcolors
+from django.urls import path
+from sklearn.cluster import KMeans
+import numpy as np
 
 # Create your views here.
 async def async_process_image(image_instance, number_of_colors, original_name, processed_image_content):
@@ -172,6 +176,7 @@ def randomize_image(request, pk):
         processed_image_path = os.path.join(BASE_DIR, processed_image_url.lstrip('/'))
         processed_image = PILImage.open(processed_image_path)
 
+
         # Check if the file exists
         if os.path.exists(processed_image_path):
             print("Processed image path:", processed_image_path)
@@ -247,3 +252,110 @@ def randomize_image(request, pk):
     else:
         # Your existing code to render the initial template
         return render(request, 'color_info.html')
+    
+
+    
+def import_images_from_directory(directory_path):
+    for filename in os.listdir(directory_path):
+        if filename.endswith('.jpg') or filename.endswith('.png'):
+            image_path = os.path.join(directory_path, filename)
+            with open(image_path, 'rb') as f:
+                kaggle_image = BookCovers()
+                kaggle_image.image.save(filename, File(f))
+                kaggle_image.save()
+
+if __name__ == "__main__":
+    images_directory = '/path/to/kaggle_images'
+    import_images_from_directory(images_directory)
+
+def book_image(request, pk):
+    print("Inside book_image view function")
+    print("Primary key(pk): ", pk)
+
+    if request.method == 'POST':
+        print("Request method:", request.method)
+
+        # Fetch the processed image URL based on the primary key (pk)
+        try:
+            image = Image.objects.get(pk=pk)
+            processed_image_url = image.processed_image.url
+            print("Processed image URL:", processed_image_url)
+        except Image.DoesNotExist:
+            return HttpResponseNotFound('Image not found')
+
+        # Open the processed image using PIL
+        processed_image_path = os.path.join(BASE_DIR, processed_image_url.lstrip('/'))
+        print(processed_image_path)
+
+        try:
+            # Fetch a random book cover image from the database
+            random_book_cover = random.choice(BookCovers.objects.all())
+            book_image_url = random_book_cover.bookImage.url
+            print("Random book cover image URL:", book_image_url)
+        except BookCovers.DoesNotExist:
+            book_image_url = None  # Handle the case when no book covers are found
+ 
+       # Construct the absolute file path for the book cover image
+        book_cover_path = os.path.join(BASE_DIR, book_image_url.lstrip('/'))
+        normalized_path = os.path.normpath(book_cover_path)
+        print("Book cover image path:", normalized_path)
+
+        # Extract dominant colors from the book cover image
+        num_colors = image.numberOfColors
+        colors = extract_colors(normalized_path, num_colors)
+        print("Extracted colors:", colors)
+
+
+        # Include the pk parameter, random colors, processed image URL, and modified image path in the context
+        context = {
+            'processed_image_url': processed_image_url,
+            'pk': pk, 
+            'book_image': book_image_url,
+            'colors' : colors,
+        }
+
+       # Check if the file exists
+        if os.path.exists(processed_image_path):
+            # If the file exists, render the book.html template
+            return render(request, 'book.html', context)
+        else:
+            # If the file doesn't exist
+            return HttpResponseNotFound('Processed image not found')
+    else:
+        # Your existing code to render the initial template
+        return render(request, 'color_info.html')
+    
+
+
+def extract_colors(normalized_path, num_colors):
+
+    try:
+        # Open the image using Pillow
+        image = PILImage.open(normalized_path)
+        print("Image opened successfully:", normalized_path)
+
+        # Convert the image to RGB mode if it's in palette mode
+        if image.mode == "P":
+            image = image.convert("RGB")
+
+        # Resize the image to a very small size to speed up processing
+        image.thumbnail((100, 100))
+
+        # Convert the image to a numpy array
+        image_array = np.array(image)
+
+        # Reshape the image array to a 2D array
+        image_flat = image_array.reshape(-1, 3)
+
+        # Perform k-means clustering to extract dominant colors
+        kmeans = KMeans(n_clusters=num_colors)
+        kmeans.fit(image_flat)
+
+        # Get the cluster centers (representative colors)
+        dominant_colors = kmeans.cluster_centers_.astype(int)
+
+        return dominant_colors.tolist()
+    except Exception as e:
+        # Handle any errors that occur during color extraction
+        print(f"Error extracting colors from {normalized_path}: {e}")
+        return []

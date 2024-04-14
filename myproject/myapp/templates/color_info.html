@@ -25,4 +25,12 @@
     <button type="submit" class="btn btn-primary" name="randomize_button">Randomize</button>
 </form>
 
+<form method="post" action="{% url 'book' pk=pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="pk" value="{{ pk }}">
+    <button type="submit" class="btn btn-primary" name="book_button">What if I was a book?</button>
+</form>
+
+
+
 {% endblock %}
