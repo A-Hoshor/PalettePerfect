@@ -148,11 +148,6 @@ def generate_random_colors(num_colors):
     """Generate a list of random colors."""
     return [generate_random_color() for _ in range(num_colors)]
 
-# Generate 4 to 6 random colors
-num_colors = random.randint(4, 6)
-random_colors = generate_random_colors(num_colors)
-
-print("Random colors:", random_colors)
 
 def randomize_image(request, pk):
     print("Inside randomize_image view function")
@@ -160,18 +155,14 @@ def randomize_image(request, pk):
 
     if request.method == 'POST':
         print("Request method:", request.method)
-        num_colors = 8
-        random_colors = generate_random_colors(num_colors)
-        print(random_colors)
-
-        # Fetch the processed image URL based on the primary key (pk)
+     # Fetch the processed image URL based on the primary key (pk)
         try:
             image = Image.objects.get(pk=pk)
             processed_image_url = image.processed_image.url
             print("Processed image URL:", processed_image_url)
         except Image.DoesNotExist:
             return HttpResponseNotFound('Image not found')
-
+        
         # Open the processed image using PIL
         processed_image_path = os.path.join(BASE_DIR, processed_image_url.lstrip('/'))
         processed_image = PILImage.open(processed_image_path)
@@ -195,6 +186,12 @@ def randomize_image(request, pk):
             image = Image.objects.get(pk=pk)
         except Image.DoesNotExist:
             return HttpResponseNotFound('Image not found')
+        
+        num_colors = image.numberOfColors
+        random_colors = generate_random_colors(num_colors)
+        print(random_colors)
+
+       
 
         # Create a list of original colors from the image object
         original_colors = []
@@ -285,6 +282,7 @@ def book_image(request, pk):
 
         # Open the processed image using PIL
         processed_image_path = os.path.join(BASE_DIR, processed_image_url.lstrip('/'))
+        processed_image = PILImage.open(processed_image_path)
         print(processed_image_path)
 
         try:
@@ -313,6 +311,54 @@ def book_image(request, pk):
             'book_image': book_image_url,
             'colors' : colors,
         }
+
+        # Convert the image to RGB mode if it's not already
+        processed_image = processed_image.convert("RGB")
+
+
+        # Convert the image to a numpy array for easier manipulation
+        processed_image_array = np.array(processed_image)
+
+        # Create a list of original colors from the image object
+        original_colors = []
+        for i in range(1, image.numberOfColors + 1):
+            hex_color = getattr(image, f"color{i}")
+            rgb_color = mcolors.hex2color(hex_color)
+            # Convert RGB values from [0, 1] to [0, 255] range
+            rgb_color_255 = tuple(int(x * 255) for x in rgb_color)
+            original_colors.append(rgb_color_255)
+
+        print("Original colors in RGB format:", original_colors)
+
+        # Filter out any None values in the original colors list
+        original_colors = [color for color in original_colors if color is not None]
+
+        # Choose one of the original colors randomly as the color to replace
+        if original_colors:
+            original_color_to_replace = random.choice(original_colors)
+        else:
+            # Handle the case where there are no original colors defined
+            return HttpResponseNotFound('No original colors found for this image')
+        print(original_color_to_replace)
+
+        tolerance = 30  
+
+        # Replace colors in the image with random colors
+        for i in range(len(processed_image_array)):
+            for j in range(len(processed_image_array[i])):
+                pixel_color = tuple(processed_image_array[i, j])
+                # Check if the pixel color is similar to any original color within the tolerance threshold
+                for original_color in original_colors:
+                        if all(abs(pixel_color[k] - original_color[k]) <= tolerance for k in range(3)):
+                            # Find the index of the original color in the original_colors list
+                            original_color_index = original_colors.index(original_color)
+                            # Replace the pixel color with the corresponding random color
+                            processed_image_array[i, j] = colors[original_color_index]
+                            break  # Break out of the loop once a match is found
+
+        # Convert the modified numpy array back to an image
+        modified_image = PILImage.fromarray(processed_image_array)
+        modified_image.show()
 
        # Check if the file exists
         if os.path.exists(processed_image_path):
