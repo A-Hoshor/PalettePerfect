@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load widget_tweaks %}
 {% block content %}
 <div class="max-w-sm rounded overflow-hidden shadow-lg">
     <a class="text-blue-600 tracking-normal mb-4" href="{% url 'home' %}">Add an image!</a>
@@ -11,19 +11,18 @@
                 <div class="font-bold text-xl mb-2">{{ image.name }}</div>
                 <p>
                     PK: {{ image.pk }} <br>
-                    Size(bytes): {{ image.size}}<br>
-                    Width: {{ image.width}}<br>
-                    Height: {{ image.height}}<br>
                     Colors: {{ image.numberOfColors}}
+                    <br>
                     Colors:
+                    <br>
                     <span {% if image.color1 %}style="background-color: {{ image.color1 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color2 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color3 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color4 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color5 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color6 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color7 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
-                    <span {% if image.color1 %}style="background-color: {{ image.color8 }}; color: white;"{% endif %}>{{ image.color1 }}</span>
+                    <span {% if image.color2 %}style="background-color: {{ image.color2 }}; color: white;"{% endif %}>{{ image.color2 }}</span>
+                    <span {% if image.color3 %}style="background-color: {{ image.color3 }}; color: white;"{% endif %}>{{ image.color3 }}</span>
+                    <span {% if image.color4 %}style="background-color: {{ image.color4 }}; color: white;"{% endif %}>{{ image.color4 }}</span>
+                    <span {% if image.color5 %}style="background-color: {{ image.color5 }}; color: white;"{% endif %}>{{ image.color5 }}</span>
+                    <span {% if image.color6 %}style="background-color: {{ image.color6 }}; color: white;"{% endif %}>{{ image.color6 }}</span>
+                    <span {% if image.color7 %}style="background-color: {{ image.color7 }}; color: white;"{% endif %}>{{ image.color7 }}</span>
+                    <span {% if image.color8 %}style="background-color: {{ image.color8 }}; color: white;"{% endif %}>{{ image.color8 }}</span>
                 </p>
             </div>
         </div>

@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <title>
-      {% block title %}
-        Django App
-      {% endblock %}    </title>
+        {% block title %}
+        {% endblock %}    
+    </title>
+</head>
+<body>
+    <div class="relative font-[sans-serif]">
+        <img src="../../../media/processed_images/IMG_0383_processed.jpg" alt="Banner Image" class="absolute inset-0 w-full h-full object-cover z-0" />
+        <div class="min-h-[300px] relative z-10 max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+            <h2 class="sm:text-4xl text-2xl font-bold mb-6">Palette Perfect</h2>
+            <p class="text-lg text-center text-gray-200">Your perfect palette is waiting.</p>
+        </div>
+    </div>
 
-  </head>
- 
     {% block content %}
-
     {% endblock %}
-  </body>
+</body>
 </html>
- 

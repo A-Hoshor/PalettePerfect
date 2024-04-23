@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
-{% block title %} Color Information {% endblock %}
+
 {% block content %}
 
-<h1>Color Information</h1>
+<br>
+<h1 style="font-family: cursive; font-size: 4rem;"></h1>Color Information</h1>
+<br>
+<a style="color: blue; font-size: 0.8rem" href="{% url 'list_images' %}">Back to all images</a>
 
 <div>
 <img src="{{ MEDIA_URL }}{{ processed_image }}" alt="Processed Image">
@@ -18,17 +20,17 @@
         {% endfor %}
     </ul>
 </div>
-
+<br>
 <form method="post" action="{% url 'random_page' pk=pk %}">
     {% csrf_token %}
     <input type="hidden" name="pk" value="{{ pk }}">
-    <button type="submit" class="btn btn-primary" name="randomize_button">Randomize</button>
+    <button type="submit" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700" name="randomize_button">Randomize</button>
 </form>
-
+<br>
 <form method="post" action="{% url 'book' pk=pk %}">
     {% csrf_token %}
     <input type="hidden" name="pk" value="{{ pk }}">
-    <button type="submit" class="btn btn-primary" name="book_button">What if I was a book?</button>
+    <button type="submit" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"name="book_button">What if I was a book?</button>
 </form>
 
 

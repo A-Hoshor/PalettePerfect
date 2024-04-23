@@ -1,10 +1,7 @@
-import math
 import numpy as np
 from sklearn.cluster import KMeans
 from PIL import Image as PilImage
-from django.core.files.base import ContentFile
 from io import BytesIO
-import io
 import os
 
 from myproject.settings import BASE_DIR
@@ -12,10 +9,8 @@ from myproject.settings import BASE_DIR
 
 async def process_image_async(image_path, n_colors, image_instance):
     image = PilImage.open(image_path)
-    wimage = math.floor(image.width/2)
-    himage = math.floor(image.height/2)
-    image = image.resize((wimage, himage))
 
+    #Convert image to array
     imagearr = np.array(image)
     imagearr = imagearr.astype('float64')
     imagearr = imagearr / 255
@@ -37,7 +32,6 @@ async def process_image_async(image_path, n_colors, image_instance):
 
     #Store centroids
     centroids = kmeans.cluster_centers_
-    print(centroids)
 
     #Send centroids to Centroids function in order to save to database
     save_centroids_to_model(image_instance, centroids)
@@ -55,7 +49,7 @@ async def process_image_async(image_path, n_colors, image_instance):
 
 
     #Save image
-    """
+    
     original_filename = os.path.basename(image_path)
     processed_image_name = f"{os.path.splitext(original_filename)[0]}_processed.jpg"
 
@@ -64,7 +58,7 @@ async def process_image_async(image_path, n_colors, image_instance):
     processed_image_io.seek(0)
 
     processed_image_path = os.path.join(BASE_DIR, 'media', 'processed_images', processed_image_name)
-    """
+    
     processed_image_content = BytesIO()
     processed_image.save(processed_image_content, format='JPEG')
     processed_image_content.seek(0)
@@ -80,17 +74,12 @@ async def process_image_async(image_path, n_colors, image_instance):
     # Append color HTML content to existing HTML file
     with open('list.html', 'a') as html_file:
         html_file.write(color_html_content)
-
-    print("process_image_async complete")
     return processed_image_content, color_html_content
 
 def save_centroids_to_model(image_instance, centroids):
-    print("begin save centroids to model function")
     n_colors = centroids.shape[0]
     for i in range(n_colors):
         setattr(image_instance, f'color{i+1}', rgb_to_hex(centroids[i]))
-    print(centroids)
-    print(image_instance)
     
 
 def rgb_to_hex(rgb):
@@ -99,7 +88,6 @@ def rgb_to_hex(rgb):
 
 
 async def generate_palette(image_path):
-    print("inside generate palette function")
 
     # Convert image data to numpy array
     img = PilImage.open(image_path)
@@ -118,11 +106,6 @@ async def generate_palette(image_path):
         
     # Call the palette function
     palette_img = await palette(imagearr)
-        
-        # Convert the palette image to base64 or save it to disk as needed
-        # For example:
-        # palette_path = 'path/to/palette.png'
-        # cv2.imwrite(palette_path, palette_img)
         
         # Return the palette image path or data in the response
     return palette_img  # Or any other response data

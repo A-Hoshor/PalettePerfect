@@ -37,3 +37,4 @@ if __name__ == "__main__":
 
     # Import images from each subject folder
     import_images_from_directory(main_directory)
+    

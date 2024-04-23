@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
-{% block title %} Color Information {% endblock %}
+{% block title %} Random Page {% endblock %}
 {% block content %}
 
-<h1>Random Image</h1>
-
+<h1 style="font-family: cursive; font-size: 4rem;">Random Image</h1>
+<a href="{% url 'color_info' pk=pk %}" style="color: blue; font-size: 0.8rem">Back to Color Information</a>
     {% if processed_image_url %}
     <div>
         <img src="{{ processed_image_url }}" alt="Processed Image">

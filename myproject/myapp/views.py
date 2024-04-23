@@ -1,27 +1,17 @@
-import asyncio
-import base64
 import random
 from django.shortcuts import render, get_object_or_404, redirect
 from myapp.forms import ImageForm
 from myapp.models import Image, BookCovers
 from myproject.settings import BASE_DIR
-from .tasks import process_image_async, generate_palette
+from .tasks import process_image_async
 from asgiref.sync import sync_to_async
 from PIL import Image as PILImage
 from django.core.files import File
-from django.core.files.base import ContentFile
 import os
-import logging
 from django.shortcuts import redirect
-from django.conf import settings
-from django.core.files.storage import default_storage
-from concurrent.futures import ThreadPoolExecutor
-from django.urls import reverse
 from django.http import HttpResponseNotFound
-from django.http import Http404
 import numpy as np
 import matplotlib.colors as mcolors
-from django.urls import path
 from sklearn.cluster import KMeans
 import numpy as np
 
@@ -48,33 +38,19 @@ async def home(request):
                 original_name = request.FILES['image'].name
 
                 # Save the image instance
-                print('saving image instance to database....')
                 await sync_to_async(image_instance.save)()
-
-                print("Uploaded file:", request.FILES['image'])
 
                 #construct path
                 image_path = os.path.join(BASE_DIR, 'media', 'image', original_name)
                 image_instance.image = image_path
-                print("Image path set from request:", image_instance.image)
-
-                print("Original image name:", original_name)
-                print("Image exists:", os.path.exists(image_instance.image.path))
 
                 # Process the image asynchronously
-                print("processing image....")
                 processed_image_content, color_html_content = await process_image_async(image_instance.image.path, numberOfColors, image_instance)
-                print("processing image done")
                 processed_image_name = f"{os.path.splitext(original_name)[0]}_processed.jpg"
-                print("processed image name: ", processed_image_name)
 
             
                # Save the processed image to the database and get the processed image object
                 processed_image_instance = await async_process_image(image_instance, numberOfColors, original_name, processed_image_content)
-
-                print("Processed image instance", processed_image_instance)
-                print("Processed image content: ", processed_image_content)
-                #print("Color HTML content: ", color_html_content)
 
                 # Pass processed image file and color HTML content to template
                 context = {
@@ -108,7 +84,6 @@ async def list_images(request):
         'images': images,
     }
 
-    #print("Context in list_images:", context)  # Check the context before rendering the template
 
     return render(request, 'list.html', context)
 
@@ -131,8 +106,6 @@ def color_info(request, pk):
         'processed_image': image.processed_image.url,  
         'colors': [image.color1, image.color2, image.color3, image.color4, image.color5, image.color6, image.color7, image.color8]
     }
-
-    print(context)
     
     return render(request, 'color_info.html', context)
 
@@ -150,8 +123,6 @@ def generate_random_colors(num_colors):
 
 
 def randomize_image(request, pk):
-    print("Inside randomize_image view function")
-    print("Primary key(pk): ", pk)
 
     if request.method == 'POST':
         print("Request method:", request.method)
@@ -189,7 +160,6 @@ def randomize_image(request, pk):
         
         num_colors = image.numberOfColors
         random_colors = generate_random_colors(num_colors)
-        print(random_colors)
 
        
 
@@ -202,7 +172,6 @@ def randomize_image(request, pk):
             rgb_color_255 = tuple(int(x * 255) for x in rgb_color)
             original_colors.append(rgb_color_255)
 
-        print("Original colors in RGB format:", original_colors)
 
         # Filter out any None values in the original colors list
         original_colors = [color for color in original_colors if color is not None]
@@ -213,7 +182,6 @@ def randomize_image(request, pk):
         else:
             # Handle the case where there are no original colors defined
             return HttpResponseNotFound('No original colors found for this image')
-        print(original_color_to_replace)
 
         tolerance = 30  
 
@@ -233,11 +201,7 @@ def randomize_image(request, pk):
         # Convert the modified numpy array back to an image
         modified_image = PILImage.fromarray(processed_image_array)
         modified_image.show()
-        """
-        # Save the modified image temporarily (you can save it permanently if needed)
-        modified_image_path = os.path.join(BASE_DIR, 'media', 'random_image', image)
-        modified_image.save(modified_image_path)
-        """
+       
         # Include the pk parameter, random colors, processed image URL, and modified image path in the context
         context = {
             'random_colors': random_colors,
